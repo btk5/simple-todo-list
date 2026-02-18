@@ -142,5 +142,19 @@ todoInput.addEventListener('keypress', (e) => {
     }
 });
 
+//Edit botton
+const editBtn = document.createElement("button");
+editBtn.textContent = "Edit";
+
+//TestCase
+test("should edit a todo item", async () => {
+  const response = await request(app)
+    .put("/api/todos/1/edit")
+    .send({ text: "Updated Todo" });
+
+  expect(response.statusCode).toBe(200);
+  expect(response.body.text).toBe("Updated Todo");
+});
+
 // Initialize
 fetchTodos();
