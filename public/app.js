@@ -97,6 +97,47 @@ async function deleteTodo(id) {
     }
 }
 
+// Edit a todo
+async function editTodo(id) {
+    const todo = todos.find(t => t.id === id);
+
+    if (!todo) {
+        alert("Todo not found");
+        return;
+    }
+
+    const newText = prompt("Edit your todo:", todo.text);
+
+    if (newText === null || newText.trim() === "") {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/${id}/edit`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ text: newText.trim() })
+        });
+
+        if (response.ok) {
+            const updatedTodo = await response.json();
+            const index = todos.findIndex(t => t.id === id);
+
+            if (index !== -1) {
+                todos[index] = updatedTodo;
+                renderTodos();
+            }
+        } else {
+            alert("Failed to edit todo");
+        }
+    } catch (error) {
+        console.error("Error editing todo:", error);
+        alert("Failed to edit todo");
+    }
+}
+
 // Render todos to the DOM
 function renderTodos() {
     if (todos.length === 0) {
@@ -111,6 +152,9 @@ function renderTodos() {
                     onchange="toggleTodo(${todo.id})"
                 />
                 <span class="todo-text">${escapeHtml(todo.text)}</span>
+
+                <button class="edit-btn" onclick="editTodo(${todo.id})">Edit</button>
+
                 <button class="delete-btn" onclick="deleteTodo(${todo.id})">Delete</button>
             </div>
         `).join('');
@@ -140,20 +184,6 @@ todoInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         addTodo();
     }
-});
-
-//Edit botton
-const editBtn = document.createElement("button");
-editBtn.textContent = "Edit";
-
-//TestCase
-test("should edit a todo item", async () => {
-  const response = await request(app)
-    .put("/api/todos/1/edit")
-    .send({ text: "Updated Todo" });
-
-  expect(response.statusCode).toBe(200);
-  expect(response.body.text).toBe("Updated Todo");
 });
 
 // Initialize
